@@ -1,4 +1,4 @@
-# Spring Security 上手
+# Spring Security 简单上手
 
 Spring Security 的简单使用，不包含理论知识，较为（特别）简陋，包括 Spring Security 引入，用户授权认证，JWT 的简单使用等
 
