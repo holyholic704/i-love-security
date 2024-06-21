@@ -1,2 +1,21 @@
 server:
   port: 8892
+spring:
+  datasource:
+    username: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    password: root1234
+    url: jdbc:mysql://127.0.0.1:3307/test_security?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+  redis:
+    database: 0
+    host: 127.0.0.1
+    port: 6379
+mybatis-plus:
+  type-aliases-package: com.example.security.mapper
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      table-underline: false
+      id-type: auto
