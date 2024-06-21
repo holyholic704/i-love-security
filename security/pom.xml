@@ -20,6 +20,7 @@
         <mybatis.plus.version>3.3.2</mybatis.plus.version>
         <fastjson.version>1.2.80</fastjson.version>
         <hutool.version>5.4.6</hutool.version>
+        <jjwt.version>0.9.1</jjwt.version>
     </properties>
 
     <dependencies>
@@ -78,6 +79,12 @@
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>
             <version>${hutool.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>${jjwt.version}</version>
         </dependency>
 
     </dependencies>

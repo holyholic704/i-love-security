@@ -19,3 +19,8 @@ mybatis-plus:
     db-config:
       table-underline: false
       id-type: auto
+jwt:
+  header: Authorization
+  suffiex: Bearer
+  expired: 86400
+  secret: jiage
