@@ -1,9 +1,13 @@
 package com.example.security.config;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.example.security.bean.ResponseResult;
 import com.example.security.bean.User;
+import com.example.security.service.RolePermissionService;
+import com.example.security.service.UserRoleService;
 import com.example.security.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +25,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
@@ -52,6 +60,10 @@ public class JwtFilter extends OncePerRequestFilter {
                     return;
                 }
 
+                if (!this.check(response, jwtUtil.getUserIdFromToken(token), request.getRequestURI())) {
+                    return;
+                }
+
                 // 认证
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -59,6 +71,37 @@ public class JwtFilter extends OncePerRequestFilter {
             }
         }
         filterChain.doFilter(request, response);
+    }
+
+    @Autowired
+    private RolePermissionService rolePermissionService;
+    @Autowired
+    private UserRoleService userRoleService;
+
+    /**
+     * 权限判断
+     */
+    private boolean check(HttpServletResponse response, Long userId, String url) throws IOException {
+        Map<Long, List<Long>> userRole = userRoleService.getUserRole();
+        List<Long> roleIds;
+
+        if (MapUtil.isNotEmpty(userRole) && userRole.containsKey(userId) && CollUtil.isNotEmpty(roleIds = userRole.get(userId))) {
+            Map<Long, Set<String>> rolePermission = rolePermissionService.getRolePermission();
+            if (MapUtil.isNotEmpty(rolePermission)) {
+                for (Number roleId : roleIds) {
+                    roleId = roleId.longValue();
+                    if (rolePermission.containsKey(roleId)) {
+                        Collection<String> set = rolePermission.get(roleId);
+                        if (set.contains(url)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        renderJson(response, ResponseResult.error("你没有权限啊"));
+        return false;
     }
 
     /**
