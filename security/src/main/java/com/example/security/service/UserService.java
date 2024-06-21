@@ -14,6 +14,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -22,6 +23,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -44,6 +46,22 @@ public class UserService extends ServiceImpl<UserMapper, User> implements UserDe
     private JwtUtil jwtUtil;
 
     /**
+     * 登录
+     *
+     * @param user 用户信息
+     * @return 登录结果
+     */
+    public ResponseResult login(User user) {
+        String username;
+        String password;
+        if (user != null && StrUtil.isNotEmpty(username = user.getUsername()) && StrUtil.isNotEmpty(password = user.getPassword())) {
+            String token = this.authenticate(username, password);
+            return token == null ? ResponseResult.error("用户名或密码错误") : ResponseResult.success(new ResponseUser(user, token));
+        }
+        return ResponseResult.error("登录失败");
+    }
+
+    /**
      * 注册
      *
      * @param user 用户信息
@@ -59,23 +77,58 @@ public class UserService extends ServiceImpl<UserMapper, User> implements UserDe
                     .setPassword(bCryptPasswordEncoder.encode(password));
             this.save(register);
 
-            // 认证
-            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username, password);
-            Authentication authentication = authenticationManager.authenticate(authenticationToken);
-
-            // 将认证信息存储在SecurityContextHolder中
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            // 获取认证信息，也就是我们实现UserDetails的类
-            User principal = (User) authentication.getPrincipal();
-            // 生成token
-            String token = jwtUtil.generate(principal);
-            // 缓存token
-            redisTemplate.opsForValue().set(username, token, expired, TimeUnit.SECONDS);
-
-            return ResponseResult.success(new ResponseUser(user, token));
+            return ResponseResult.success(new ResponseUser(user, this.authenticate(username, password)));
         }
         return ResponseResult.error("注册失败");
+    }
+
+    /**
+     * 退出登录
+     *
+     * @param request 请求
+     */
+    public void logout(HttpServletRequest request) {
+        // 获取请求头里携带的token
+        String token = request.getHeader(header);
+        if (StrUtil.isNotEmpty(token) && StrUtil.startWith(token, suffiex)) {
+            token = token.substring(suffiex.length());
+            // 删除token缓存
+            String username = jwtUtil.getUsernameFromToken(token);
+            redisTemplate.delete(username);
+            // 修改认证信息
+            SecurityContextHolder.getContext().getAuthentication().setAuthenticated(false);
+        }
+    }
+
+    /**
+     * 认证
+     *
+     * @param username 用户名
+     * @param password 密码
+     * @return token
+     */
+    private String authenticate(String username, String password) {
+        // 认证
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username, password);
+        Authentication authentication;
+        try {
+            authentication = authenticationManager.authenticate(authenticationToken);
+        } catch (AuthenticationException e) {
+            // 一般只有登录时认证失败才会进入这里
+            return null;
+        }
+
+        // 将认证信息存储在SecurityContextHolder中
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // 获取认证信息，也就是我们实现UserDetails的类
+        User principal = (User) authentication.getPrincipal();
+        // 生成token
+        String token = jwtUtil.generate(principal);
+        // 缓存token
+        redisTemplate.opsForValue().set(username, token, expired, TimeUnit.SECONDS);
+
+        return token;
     }
 
     /**

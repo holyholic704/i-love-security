@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
+
 @RestController
 public class TestController {
 
@@ -23,5 +25,16 @@ public class TestController {
     @PostMapping("register")
     public ResponseResult register(@RequestBody User user) {
         return userService.register(user);
+    }
+
+    @PostMapping("login")
+    public ResponseResult login(@RequestBody User user) {
+        return userService.login(user);
+    }
+
+    @PostMapping("logout")
+    public String logout(HttpServletRequest request) {
+        userService.logout(request);
+        return "done";
     }
 }
