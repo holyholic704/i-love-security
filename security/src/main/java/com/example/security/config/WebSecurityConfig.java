@@ -16,6 +16,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
+    private MyAccessDeniedHandler accessDeniedHandler;
+    @Autowired
     private JwtFilter jwtFilter;
 
     // TODO 注意
@@ -38,6 +40,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .csrf().disable()
+                .exceptionHandling().authenticationEntryPoint(accessDeniedHandler)
+                .and()
                 .authorizeRequests()
                 .antMatchers("/login", "/register", "/logout")
                 .permitAll()
