@@ -55,8 +55,8 @@ public class UserService extends ServiceImpl<UserMapper, User> implements UserDe
         String username;
         String password;
         if (user != null && StrUtil.isNotEmpty(username = user.getUsername()) && StrUtil.isNotEmpty(password = user.getPassword())) {
-            String token = this.authenticate(username, password);
-            return token == null ? ResponseResult.error("用户名或密码错误") : ResponseResult.success(new ResponseUser(user, token));
+            ResponseUser responseUser = this.authenticate(username, password);
+            return responseUser == null ? ResponseResult.error("用户名或密码错误") : ResponseResult.success(responseUser);
         }
         return ResponseResult.error("登录失败");
     }
@@ -77,7 +77,7 @@ public class UserService extends ServiceImpl<UserMapper, User> implements UserDe
                     .setPassword(bCryptPasswordEncoder.encode(password));
             this.save(register);
 
-            return ResponseResult.success(new ResponseUser(user, this.authenticate(username, password)));
+            return ResponseResult.success(this.authenticate(username, password));
         }
         return ResponseResult.error("注册失败");
     }
@@ -105,9 +105,9 @@ public class UserService extends ServiceImpl<UserMapper, User> implements UserDe
      *
      * @param username 用户名
      * @param password 密码
-     * @return token
+     * @return 用户信息及token
      */
-    private String authenticate(String username, String password) {
+    private ResponseUser authenticate(String username, String password) {
         // 认证
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username, password);
         Authentication authentication;
@@ -128,7 +128,7 @@ public class UserService extends ServiceImpl<UserMapper, User> implements UserDe
         // 缓存token
         redisTemplate.opsForValue().set(username, token, expired, TimeUnit.SECONDS);
 
-        return token;
+        return new ResponseUser(principal, token);
     }
 
     /**

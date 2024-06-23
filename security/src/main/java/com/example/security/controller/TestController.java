@@ -2,6 +2,7 @@ package com.example.security.controller;
 
 import com.example.security.bean.ResponseResult;
 import com.example.security.bean.User;
+import com.example.security.service.TestService;
 import com.example.security.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,9 +17,14 @@ public class TestController {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private TestService testService;
 
     @GetMapping("test")
     public String test() {
+        testService.test1();
+        testService.test2();
+        testService.test3();
         return "good";
     }
 
