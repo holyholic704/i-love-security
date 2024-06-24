@@ -10,6 +10,11 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Collections;
 
 @Configuration
 @EnableGlobalMethodSecurity(prePostEnabled = true)
@@ -50,4 +55,24 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         // 添加JWT过滤器
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
     }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration corsConfiguration = new CorsConfiguration();
+        // 允许访问的源
+        corsConfiguration.setAllowedOrigins(Collections.singletonList("*"));
+        // 是否需要携带身份凭证
+        corsConfiguration.setAllowCredentials(true);
+        // 预检请求的响应结果能够缓存多久
+        corsConfiguration.setMaxAge(86400L);
+        // 允许携带的请求头
+        corsConfiguration.setAllowedHeaders(Collections.singletonList("*"));
+        // 允许使用的请求方法
+        corsConfiguration.setAllowedMethods(Collections.singletonList("*"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", corsConfiguration);
+        return source;
+    }
+
 }

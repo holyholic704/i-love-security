@@ -5,10 +5,7 @@ import com.example.security.bean.User;
 import com.example.security.service.TestService;
 import com.example.security.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -20,6 +17,7 @@ public class TestController {
     @Autowired
     private TestService testService;
 
+    @CrossOrigin
     @GetMapping("test")
     public String test() {
         testService.test1();
