@@ -68,6 +68,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        // 如果实现了多个UserDetailsService，需指定哪个Provider用的是哪个UserDetailsService
         auth.authenticationProvider(phoneAuthenticationProvider()).userDetailsService(phoneLoginService);
     }
 

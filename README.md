@@ -823,3 +823,186 @@ private boolean check(HttpServletResponse response, Long userId, String url) thr
 首先在数据库中添加角色、权限等信息，也可以自己编写接口插入，或者运行 sql 目录下的 `test_security-2.sql`，提供了简短的测试数据
 
 分别获取两个用户的 token，两个用户对应不同的角色，一个角色中有其他角色无法请求的接口，分别携带着这两个 token 去请求这个接口，一个可以正常访问，一个返回没有权限
+
+### 使用注解鉴权
+
+使用注解，相比于使用配置或者统一鉴权，粒度更细，可以针对某个方法进行鉴权，而配置或者统一鉴权都是针对接口进行鉴权
+
+Spring Security 常用 `@PreAuthorize` 进行鉴权，如需使用，先在配置类上加上 `@EnableGlobalMethodSecurity(prePostEnabled = true)` 注解
+
+编写测试方法，对需要鉴权的方法上加上注解就可以，至于注解里面使用 hasAuthority 还是 hasRole 都可以，一般推荐使用 hasAuthority
+
+```java
+@Service
+public class TestService {
+
+    public void test1() {
+        System.out.println("test1");
+    }
+
+    @PreAuthorize("hasAuthority('/test')")
+    public void test2() {
+        System.out.println("test2");
+    }
+
+    @PreAuthorize("hasAuthority('/test3')")
+    public void test3() {
+        System.out.println("test3");
+    }
+}
+```
+
+复用 test 接口
+
+```java
+@Autowired
+private TestService testService;
+
+@GetMapping("test")
+public String test() {
+    testService.test1();
+    testService.test2();
+    testService.test3();
+    return "good";
+}
+```
+
+项目启动后请求该接口，就可在控制台看出只打印了前两个方法，第三个方法没打印出来，而且前端显示 403 错误
+
+## 跨域处理
+
+在配置类中加上
+
+```java
+@Bean
+CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration corsConfiguration = new CorsConfiguration();
+    // 允许访问的源
+    corsConfiguration.setAllowedOrigins(Collections.singletonList("*"));
+    // 是否需要携带身份凭证
+    corsConfiguration.setAllowCredentials(true);
+    // 预检请求的响应结果能够缓存多久
+    corsConfiguration.setMaxAge(86400L);
+    // 允许携带的请求头
+    corsConfiguration.setAllowedHeaders(Collections.singletonList("*"));
+    // 允许使用的请求方法
+    corsConfiguration.setAllowedMethods(Collections.singletonList("*"));
+
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", corsConfiguration);
+    return source;
+}
+```
+
+## 手机验证码登录
+
+手机验证码登录与邮箱验证码登录、扫码登录等流程大差不差，了解了手机验证码登录，再去使用其他登录方式时上手就简单多了
+
+下面只会模拟发验证码操作，不会调用短信 API 真的发送验证码，一方面是我懒，一方面是方便学习调试
+
+```java
+@Service
+public class CodeService {
+
+    @Autowired
+    private RedisTemplate redisTemplate;
+
+    /**
+     * 获取一个验证码
+     *
+     * @param phone 手机号
+     * @return 验证码
+     */
+    public String getCode(String phone) {
+        // 模拟生成一个验证码
+        String code = String.valueOf(RandomUtil.getRandom().nextInt(1000, 9999));
+        // 将验证码放入缓存，有效时间5分钟
+        redisTemplate.opsForValue().set(phone, code, 5, TimeUnit.MINUTES);
+        return code;
+    }
+}
+```
+
+要想实现自己的认证方式，至少要实现 AbstractAuthenticationToken 和 AuthenticationProvider，网上也有说还需实现 AbstractAuthenticationProcessingFilter，我尝试了一下，有些复杂，问题也比较多，所以就略过
+
+自定义一个 AbstractAuthenticationToken，模仿 UsernamePasswordAuthenticationToken 来就行
+
+```java
+public class PhoneAuthenticationToken extends AbstractAuthenticationToken {
+
+    /**
+     * 手机号
+     */
+    private Object principal;
+
+    public PhoneAuthenticationToken(Object principal) {
+        super(null);
+        this.principal = principal;
+        super.setAuthenticated(false);
+    }
+
+    public PhoneAuthenticationToken(Collection<? extends GrantedAuthority> authorities, Object principal) {
+        super(authorities);
+        this.principal = principal;
+        super.setAuthenticated(true);
+    }
+
+    @Override
+    public Object getCredentials() {
+        return null;
+    }
+
+    @Override
+    public Object getPrincipal() {
+        return this.principal;
+    }
+}
+```
+
+实现 AuthenticationProvider 接口，用于身份校验，
+
+```java
+public class PhoneAuthenticationProvider implements AuthenticationProvider {
+
+    private final PhoneLoginService phoneLoginService;
+
+    public PhoneAuthenticationProvider(PhoneLoginService phoneLoginService) {
+        this.phoneLoginService = phoneLoginService;
+    }
+
+    @Override
+    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+        PhoneAuthenticationToken token = (PhoneAuthenticationToken) authentication;
+        // 获取手机号
+        String phoneNum = (String) token.getPrincipal();
+        // 根据手机号获取用户信息
+        User user = (User) phoneLoginService.loadUserByUsername(phoneNum);
+        token.setAuthenticated(true);
+        token.setDetails(user.getId());
+        return authentication;
+    }
+
+    @Override
+    public boolean supports(Class<?> clazz) {
+        return clazz.isAssignableFrom(PhoneAuthenticationToken.class);
+    }
+}
+```
+
+在配置类加上以下配置即可
+
+```java
+@Autowired
+private PhoneLoginService phoneLoginService;
+
+@Bean
+PhoneAuthenticationProvider phoneAuthenticationProvider() {
+    return new PhoneAuthenticationProvider(phoneLoginService);
+}
+
+@Override
+protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+    // 如果实现了多个UserDetailsService，需指定哪个Provider用的是哪个UserDetailsService
+    auth.authenticationProvider(phoneAuthenticationProvider()).userDetailsService(phoneLoginService);
+}
+```
