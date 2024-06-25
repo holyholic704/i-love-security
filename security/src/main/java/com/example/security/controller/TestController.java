@@ -2,6 +2,7 @@ package com.example.security.controller;
 
 import com.example.security.bean.ResponseResult;
 import com.example.security.bean.User;
+import com.example.security.service.CodeService;
 import com.example.security.service.TestService;
 import com.example.security.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,8 @@ public class TestController {
     private UserService userService;
     @Autowired
     private TestService testService;
+    @Autowired
+    private CodeService codeService;
 
     @CrossOrigin
     @GetMapping("test")
@@ -40,5 +43,10 @@ public class TestController {
     public String logout(HttpServletRequest request) {
         userService.logout(request);
         return "done";
+    }
+
+    @GetMapping("getCode")
+    public String getCode(@RequestParam String phone) {
+        return codeService.getCode(phone);
     }
 }

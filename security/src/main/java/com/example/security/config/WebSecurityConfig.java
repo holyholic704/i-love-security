@@ -48,7 +48,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .exceptionHandling().authenticationEntryPoint(accessDeniedHandler)
                 .and()
                 .authorizeRequests()
-                .antMatchers("/login", "/register", "/logout")
+                .antMatchers("/login", "/register", "/logout", "/getCode")
                 .permitAll()
                 .anyRequest()
                 .authenticated();
