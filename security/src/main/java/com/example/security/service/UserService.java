@@ -37,6 +37,8 @@ public class UserService extends ServiceImpl<UserMapper, User> implements UserDe
     @Value("${jwt.expired}")
     private Long expired;
 
+    private static final String prefix = "PHONE";
+
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
     @Autowired
@@ -209,7 +211,7 @@ public class UserService extends ServiceImpl<UserMapper, User> implements UserDe
      */
     private boolean checkCode(String phoneNum, String receiveCode) {
         if (StrUtil.isNotBlank(phoneNum) && StrUtil.isNotBlank(receiveCode)) {
-            String code = (String) redisTemplate.opsForValue().get(phoneNum);
+            String code = (String) redisTemplate.opsForValue().get(prefix + phoneNum);
             if (StrUtil.isNotBlank(code)) {
                 return code.equals(receiveCode);
             }

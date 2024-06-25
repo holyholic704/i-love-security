@@ -10,6 +10,8 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class CodeService {
 
+    private static final String prefix = "PHONE";
+
     @Autowired
     private RedisTemplate redisTemplate;
 
@@ -23,7 +25,7 @@ public class CodeService {
         // 模拟生成一个验证码
         String code = String.valueOf(RandomUtil.getRandom().nextInt(1000, 9999));
         // 将验证码放入缓存，有效时间5分钟
-        redisTemplate.opsForValue().set(phone, code, 5, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(prefix + phone, code, 5, TimeUnit.MINUTES);
         return code;
     }
 }

@@ -68,7 +68,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.authenticationProvider(phoneAuthenticationProvider());
+        auth.authenticationProvider(phoneAuthenticationProvider()).userDetailsService(phoneLoginService);
     }
 
     @Bean
