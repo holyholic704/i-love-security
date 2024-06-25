@@ -26,6 +26,9 @@ public class User extends BaseModel implements UserDetails {
 
     private Boolean del;
 
+    @TableField(exist = false)
+    private String code;
+
     public User(Long id, String username) {
         this.setId(id);
         this.username = username;

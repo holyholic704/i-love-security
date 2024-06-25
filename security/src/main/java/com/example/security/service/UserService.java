@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.security.bean.ResponseResult;
 import com.example.security.bean.ResponseUser;
 import com.example.security.bean.User;
+import com.example.security.config.PhoneAuthenticationToken;
 import com.example.security.mapper.UserMapper;
 import com.example.security.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,9 +55,15 @@ public class UserService extends ServiceImpl<UserMapper, User> implements UserDe
     public ResponseResult login(User user) {
         String username;
         String password;
-        if (user != null && StrUtil.isNotEmpty(username = user.getUsername()) && StrUtil.isNotEmpty(password = user.getPassword())) {
-            ResponseUser responseUser = this.authenticate(username, password);
-            return responseUser == null ? ResponseResult.error("用户名或密码错误") : ResponseResult.success(responseUser);
+        if (user != null && StrUtil.isNotEmpty(username = user.getUsername())) {
+            if (StrUtil.isNotEmpty(user.getCode())) {
+                return this.loginPhone(user);
+            }
+
+            if (StrUtil.isNotEmpty(password = user.getPassword())) {
+                ResponseUser responseUser = this.authenticate(username, password);
+                return responseUser == null ? ResponseResult.error("用户名或密码错误") : ResponseResult.success(responseUser);
+            }
         }
         return ResponseResult.error("登录失败");
     }
@@ -155,5 +162,58 @@ public class UserService extends ServiceImpl<UserMapper, User> implements UserDe
                 .eq(User::getUsername, username));
         Assert.isTrue(user != null, "当前用户不存在");
         return user;
+    }
+
+    /**
+     * 手机登录
+     *
+     * @param user 用户信息
+     * @return 是否登录成功
+     */
+    public ResponseResult loginPhone(User user) {
+        String username = user.getUsername();
+        String code = user.getCode();
+        // 验证码校验
+        if (this.checkCode(username, code)) {
+            // 认证
+            PhoneAuthenticationToken authenticationToken = new PhoneAuthenticationToken(username);
+            Authentication authentication;
+            try {
+                authentication = authenticationManager.authenticate(authenticationToken);
+            } catch (AuthenticationException e) {
+                return ResponseResult.error("登录失败");
+            }
+
+            // 将认证信息存储在SecurityContextHolder中
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            // 获取手机号
+            String principal = (String) authentication.getPrincipal();
+            // 获取用户ID
+            Long id = (Long) authentication.getDetails();
+            // 生成token
+            String token = jwtUtil.generate(user = new User(id, principal));
+            // 加入缓存
+            redisTemplate.opsForValue().set(username, token, expired, TimeUnit.SECONDS);
+            return ResponseResult.success(new ResponseUser(user, token));
+        }
+        return ResponseResult.error("登录失败");
+    }
+
+    /**
+     * 验证码校验
+     *
+     * @param phoneNum    手机号
+     * @param receiveCode 收到的验证码
+     * @return 是否校验成功
+     */
+    private boolean checkCode(String phoneNum, String receiveCode) {
+        if (StrUtil.isNotBlank(phoneNum) && StrUtil.isNotBlank(receiveCode)) {
+            String code = (String) redisTemplate.opsForValue().get(phoneNum);
+            if (StrUtil.isNotBlank(code)) {
+                return code.equals(receiveCode);
+            }
+        }
+        return false;
     }
 }

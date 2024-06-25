@@ -1,9 +1,11 @@
 package com.example.security.config;
 
+import com.example.security.service.PhoneLoginService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -54,6 +56,19 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authenticated();
         // 添加JWT过滤器
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+    }
+
+    @Autowired
+    private PhoneLoginService phoneLoginService;
+
+    @Bean
+    PhoneAuthenticationProvider phoneAuthenticationProvider() {
+        return new PhoneAuthenticationProvider(phoneLoginService);
+    }
+
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.authenticationProvider(phoneAuthenticationProvider());
     }
 
     @Bean
