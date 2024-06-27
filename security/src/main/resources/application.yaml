@@ -15,10 +15,10 @@ mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-  global-config:
-    db-config:
-      table-underline: false
-      id-type: auto
+#  global-config:
+#    db-config:
+#      table-underline: false
+#      id-type: auto
 jwt:
   header: Authorization
   suffiex: Bearer
