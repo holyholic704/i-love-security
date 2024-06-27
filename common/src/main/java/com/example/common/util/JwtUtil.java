@@ -1,7 +1,7 @@
-package com.example.security.util;
+package com.example.common.util;
 
 import cn.hutool.core.util.StrUtil;
-import com.example.security.bean.User;
+import com.example.common.bean.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.CompressionCodecs;
 import io.jsonwebtoken.Jwts;

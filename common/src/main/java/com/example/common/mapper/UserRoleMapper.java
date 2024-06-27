@@ -1,7 +1,7 @@
-package com.example.security.mapper;
+package com.example.common.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.example.security.bean.UserRole;
+import com.example.common.bean.UserRole;
 
 public interface UserRoleMapper extends BaseMapper<UserRole> {
 }

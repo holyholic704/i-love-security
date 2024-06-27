@@ -1,7 +1,7 @@
-package com.example.security.mapper;
+package com.example.common.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.example.security.bean.RolePermission;
+import com.example.common.bean.RolePermission;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.example.security.bean;
+package com.example.common.bean;
 
 public enum ResponseCode {
     SUCCESS(0, "请求成功"),

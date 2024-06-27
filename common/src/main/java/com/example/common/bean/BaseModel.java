@@ -1,4 +1,4 @@
-package com.example.security.bean;
+package com.example.common.bean;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;

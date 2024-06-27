@@ -1,4 +1,4 @@
-package com.example.security.bean;
+package com.example.common.bean;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.AllArgsConstructor;

@@ -1,6 +1,6 @@
 package com.example.security.config;
 
-import com.example.security.bean.User;
+import com.example.common.bean.User;
 import com.example.security.service.PhoneLoginService;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;

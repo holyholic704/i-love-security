@@ -1,5 +1,6 @@
-package com.example.security.bean;
+package com.example.common.bean;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -11,7 +12,10 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class Permission extends BaseModel {
+@TableName("user_role")
+public class UserRole extends BaseModel {
 
-    private String permission;
+    private Long userId;
+
+    private Long roleId;
 }

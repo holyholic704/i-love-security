@@ -1,8 +1,8 @@
 package com.example.security.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.example.security.bean.User;
-import com.example.security.mapper.UserMapper;
+import com.example.common.bean.User;
+import com.example.common.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

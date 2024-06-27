@@ -11,7 +11,7 @@ spring:
     host: 127.0.0.1
     port: 6379
 mybatis-plus:
-  type-aliases-package: com.example.security.mapper
+  type-aliases-package: com.example.*.mapper
   configuration:
     map-underscore-to-camel-case: true
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

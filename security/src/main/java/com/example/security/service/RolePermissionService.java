@@ -2,8 +2,8 @@ package com.example.security.service;
 
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.example.security.bean.RolePermission;
-import com.example.security.mapper.RolePermissionMapper;
+import com.example.common.bean.RolePermission;
+import com.example.common.mapper.RolePermissionMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;

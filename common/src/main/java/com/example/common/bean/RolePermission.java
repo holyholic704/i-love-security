@@ -1,22 +1,25 @@
-package com.example.security.bean;
+package com.example.common.bean;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
-import java.util.List;
-
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Accessors(chain = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class Role extends BaseModel {
-    private String role;
+@TableName("role_permission")
+public class RolePermission extends BaseModel {
+
+    private Long roleId;
+
+    private Long permissionId;
 
     @TableField(exist = false)
-    private List<String> permissionList;
+    private String permission;
 }
