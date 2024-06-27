@@ -1,4 +1,4 @@
-package com.example.common.config;
+package com.example.security.config;
 
 import com.alibaba.fastjson.support.spring.FastJsonRedisSerializer;
 import org.springframework.context.annotation.Bean;
